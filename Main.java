@@ -9,26 +9,36 @@ import java.io.File;
 import org.apache.commons.io.FileUtils;
 
 public class Main {
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) throws Exception {
 
         ChromeOptions options = new ChromeOptions();
+
+        // ✅ REQUIRED for GitHub Actions
+        options.addArguments("--headless=new");
+        options.addArguments("--no-sandbox");
+        options.addArguments("--disable-dev-shm-usage");
+
+        // Optional (anti-detection basic)
         options.addArguments("--disable-blink-features=AutomationControlled");
-        options.addArguments("--start-maximized");
+
+        // ✅ IMPORTANT: Set Chromium binary path
+        options.setBinary("/usr/bin/chromium-browser");
 
         WebDriver driver = new ChromeDriver(options);
 
         driver.get("https://www.google.com");
 
-        Thread.sleep(random(2000, 4000));
+        Thread.sleep(random(3000, 5000));
 
         WebElement searchBox = driver.findElement(By.name("q"));
 
         typeLikeHuman(searchBox, "Hello World");
-        
+
+        Thread.sleep(2000); // wait for text to appear
+
+        // ✅ Take screenshot AFTER typing
         File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
         FileUtils.copyFile(screenshot, new File("output.png"));
-
-        Thread.sleep(5000);
 
         driver.quit();
     }
