@@ -5,12 +5,15 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.Keys;
 
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 
 import java.io.File;
 import java.time.Duration;
+import java.time.LocalTime;
+import java.time.ZoneId;
 
 import org.apache.commons.io.FileUtils;
 
@@ -18,30 +21,31 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
+        // ✅ Wait until 7:05 PM IST
+        waitUntil(19, 5);
+
         ChromeOptions options = new ChromeOptions();
 
-        // ✅ Required for GitHub Actions
+        // Required for GitHub Actions
         options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
 
-        // Optional (basic anti-detection)
+        // Optional
         options.addArguments("--disable-blink-features=AutomationControlled");
 
-        // ✅ Chromium binary path (important for Ubuntu runner)
+        // Chromium path (GitHub runner)
         options.setBinary("/usr/bin/chromium-browser");
 
         WebDriver driver = new ChromeDriver(options);
 
-        // Set consistent window size
         driver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
 
-        // Open Google
         driver.get("https://www.google.com");
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
 
-        // ✅ Handle cookie popup (if present)
+        // Handle cookie popup if present
         try {
             WebElement acceptBtn = wait.until(
                 ExpectedConditions.elementToBeClickable(
@@ -49,28 +53,52 @@ public class Main {
                 )
             );
             acceptBtn.click();
-        } catch (Exception ignored) {
-            // Popup not present — continue
-        }
+        } catch (Exception ignored) {}
 
-        // ✅ Wait for search box properly
+        // Wait for search box
         WebElement searchBox = wait.until(
             ExpectedConditions.visibilityOfElementLocated(
                 By.cssSelector("textarea[name='q'], input[name='q']")
             )
         );
 
-        // Type like human
-        typeLikeHuman(searchBox, "Hello World");
+        // Type search query
+        typeLikeHuman(searchBox, "current time in India");
 
-        // Small wait so text appears clearly
-        Thread.sleep(2000);
+        // Press Enter
+        searchBox.sendKeys(Keys.ENTER);
 
-        // ✅ Take screenshot AFTER typing
+        // Wait for results page to load
+        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("search")));
+
+        Thread.sleep(2000); // small buffer
+
+        // Take screenshot
         File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
         FileUtils.copyFile(screenshot, new File("output.png"));
 
         driver.quit();
+    }
+
+    // ✅ Wait until specific IST time
+    public static void waitUntil(int targetHour, int targetMinute) throws InterruptedException {
+
+        ZoneId zone = ZoneId.of("Asia/Kolkata");
+
+        while (true) {
+            LocalTime now = LocalTime.now(zone);
+
+            System.out.println("Current IST time: " + now);
+
+            // Exit if current time is equal or past target
+            if (now.getHour() > targetHour ||
+               (now.getHour() == targetHour && now.getMinute() >= targetMinute)) {
+                System.out.println("Target time reached!");
+                break;
+            }
+
+            Thread.sleep(10000); // check every 10 sec
+        }
     }
 
     public static void typeLikeHuman(WebElement element, String text) throws InterruptedException {
