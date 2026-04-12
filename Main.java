@@ -3,6 +3,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import java.io.File;
+import org.apache.commons.io.FileUtils;
 
 public class Main {
     public static void main(String[] args) throws InterruptedException {
@@ -20,6 +24,9 @@ public class Main {
         WebElement searchBox = driver.findElement(By.name("q"));
 
         typeLikeHuman(searchBox, "Hello World");
+        
+        File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+        FileUtils.copyFile(screenshot, new File("output.png"));
 
         Thread.sleep(5000);
 
