@@ -5,36 +5,66 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
+
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+
 import java.io.File;
+import java.time.Duration;
+
 import org.apache.commons.io.FileUtils;
 
 public class Main {
+
     public static void main(String[] args) throws Exception {
 
         ChromeOptions options = new ChromeOptions();
 
-        // ✅ REQUIRED for GitHub Actions
+        // ✅ Required for GitHub Actions
         options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
 
-        // Optional (anti-detection basic)
+        // Optional (basic anti-detection)
         options.addArguments("--disable-blink-features=AutomationControlled");
 
-        // ✅ IMPORTANT: Set Chromium binary path
+        // ✅ Chromium binary path (important for Ubuntu runner)
         options.setBinary("/usr/bin/chromium-browser");
 
         WebDriver driver = new ChromeDriver(options);
 
+        // Set consistent window size
+        driver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
+
+        // Open Google
         driver.get("https://www.google.com");
 
-        Thread.sleep(random(3000, 5000));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        WebElement searchBox = driver.findElement(By.name("q"));
+        // ✅ Handle cookie popup (if present)
+        try {
+            WebElement acceptBtn = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                    By.xpath("//button//*[text()='Accept all']")
+                )
+            );
+            acceptBtn.click();
+        } catch (Exception ignored) {
+            // Popup not present — continue
+        }
 
+        // ✅ Wait for search box properly
+        WebElement searchBox = wait.until(
+            ExpectedConditions.visibilityOfElementLocated(
+                By.cssSelector("textarea[name='q'], input[name='q']")
+            )
+        );
+
+        // Type like human
         typeLikeHuman(searchBox, "Hello World");
 
-        Thread.sleep(2000); // wait for text to appear
+        // Small wait so text appears clearly
+        Thread.sleep(2000);
 
         // ✅ Take screenshot AFTER typing
         File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
