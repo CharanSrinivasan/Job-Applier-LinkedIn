@@ -2,8 +2,8 @@ name: Run Selenium Script
 
 on:
   schedule:
-    - cron: '15 13 * * *'   # 6:45 PM IST
-    - cron: '25 13 * * *'   # 6:55 PM IST
+    - cron: '3 13 * * *'   # 6:33 PM IST
+    - cron: '4 13 * * *'   # 6:34 PM IST
   workflow_dispatch:
 
 jobs:
@@ -12,10 +12,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Java
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
@@ -25,14 +25,11 @@ jobs:
           sudo apt update
           sudo apt install -y chromium-browser chromium-chromedriver
 
-      - name: Verify Chromium
-        run: chromium-browser --version
-
       - name: Run Selenium Script
         run: mvn clean compile exec:java
 
       - name: Upload Screenshot
-        uses: actions/upload-artifact@v4   # ✅ FIXED HERE
+        uses: actions/upload-artifact@v4
         with:
           name: selenium-output
           path: output.png
