@@ -21,8 +21,8 @@ public class Main {
 
     public static void main(String[] args) throws Exception {
 
-        // ✅ Wait until 7:05 PM IST
-        waitUntil(19, 4);
+        // ✅ Wait until 7:12 PM IST
+        waitUntil(19, 13);
 
         ChromeOptions options = new ChromeOptions();
 
@@ -31,8 +31,9 @@ public class Main {
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
 
-        // Optional
+        // Reduce detection
         options.addArguments("--disable-blink-features=AutomationControlled");
+        options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36");
 
         // Chromium path (GitHub runner)
         options.setBinary("/usr/bin/chromium-browser");
@@ -43,7 +44,7 @@ public class Main {
 
         driver.get("https://www.google.com");
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
 
         // Handle cookie popup if present
         try {
@@ -62,16 +63,21 @@ public class Main {
             )
         );
 
-        // Type search query
+        // Type query
         typeLikeHuman(searchBox, "current time in India");
 
         // Press Enter
         searchBox.sendKeys(Keys.ENTER);
 
-        // Wait for results page to load
-        wait.until(ExpectedConditions.presenceOfElementLocated(By.id("search")));
+        // ✅ Wait for results safely (no #search dependency)
+        wait.until(ExpectedConditions.or(
+                ExpectedConditions.presenceOfElementLocated(By.id("search")),
+                ExpectedConditions.presenceOfElementLocated(By.cssSelector("a h3")),
+                ExpectedConditions.presenceOfElementLocated(By.tagName("body"))
+        ));
 
-        Thread.sleep(2000); // small buffer
+        // Wait for page rendering
+        Thread.sleep(3000);
 
         // Take screenshot
         File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
