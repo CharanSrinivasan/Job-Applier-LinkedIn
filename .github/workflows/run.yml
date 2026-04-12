@@ -2,8 +2,8 @@ name: Run Selenium Script
 
 on:
   schedule:
-    - cron: '3 13 * * *'   # 6:33 PM IST
-    - cron: '4 13 * * *'   # 6:34 PM IST
+    - cron: '12 13 * * *'   # 6:42 PM IST
+    - cron: '13 13 * * *'   # 6:43 PM IST
   workflow_dispatch:
 
 jobs:
@@ -33,4 +33,3 @@ jobs:
         with:
           name: selenium-output
           path: output.png
-          # trigger workflow
