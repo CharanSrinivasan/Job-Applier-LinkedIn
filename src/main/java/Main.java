@@ -21,12 +21,9 @@ public class Main {
 
         ChromeOptions options = new ChromeOptions();
 
-        // Headless (GitHub Actions)
         options.addArguments("--headless=new");
         options.addArguments("--no-sandbox");
         options.addArguments("--disable-dev-shm-usage");
-
-        // Reduce detection
         options.addArguments("--disable-blink-features=AutomationControlled");
         options.addArguments("--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 Chrome/120 Safari/537.36");
 
@@ -35,52 +32,70 @@ public class Main {
         WebDriver driver = new ChromeDriver(options);
         driver.manage().window().setSize(new org.openqa.selenium.Dimension(1920, 1080));
 
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
+        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(25));
 
-        // ✅ Open ChatGPT
-        driver.get("https://chatgpt.com");
-
-        // Wait for page load
-        Thread.sleep(5000);
-
-        // ✅ Try to handle "continue without login" (best effort)
         try {
-            WebElement continueBtn = wait.until(
-                ExpectedConditions.elementToBeClickable(
-                    By.xpath("//button[contains(., 'Stay logged out') or contains(., 'Continue')]")
-                )
-            );
-            continueBtn.click();
-            System.out.println("Clicked continue without login");
-        } catch (Exception e) {
-            System.out.println("No continue button found or already accessible");
+            driver.get("https://chatgpt.com");
+
+            // ✅ Wait for page load (body present)
+            wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
+
+            // ✅ Try clicking "Continue / Stay logged out"
+            try {
+                WebElement continueBtn = wait.until(
+                        ExpectedConditions.elementToBeClickable(
+                                By.xpath("//button[contains(., 'Stay logged out') or contains(., 'Continue')]")
+                        )
+                );
+                continueBtn.click();
+                System.out.println("Clicked continue button");
+            } catch (Exception e) {
+                System.out.println("Continue button not present");
+            }
+
+            // ✅ Wait for textarea OR fallback (login page)
+            WebElement inputBox = null;
+
+            try {
+                inputBox = wait.until(
+                        ExpectedConditions.visibilityOfElementLocated(By.cssSelector("textarea"))
+                );
+                System.out.println("Input box found");
+            } catch (Exception e) {
+                System.out.println("Input box not found (likely login page)");
+            }
+
+            // ✅ If input exists → type & send
+            if (inputBox != null) {
+
+                inputBox.sendKeys("Hii, Give me a joke");
+
+                // Wait for send button to be clickable
+                WebElement sendBtn = wait.until(
+                        ExpectedConditions.elementToBeClickable(
+                                By.id("composer-submit-button")
+                        )
+                );
+
+                sendBtn.click();
+                System.out.println("Message sent");
+
+                // ✅ Wait for response to appear (very important)
+                wait.until(ExpectedConditions.or(
+                        ExpectedConditions.presenceOfElementLocated(By.cssSelector("[data-message-author-role='assistant']")),
+                        ExpectedConditions.presenceOfElementLocated(By.tagName("article"))
+                ));
+            }
+
+            // ✅ Wait until something stable before screenshot
+            wait.until(ExpectedConditions.presenceOfElementLocated(By.tagName("body")));
+
+            // Screenshot
+            File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
+            FileUtils.copyFile(screenshot, new File("output.png"));
+
+        } finally {
+            driver.quit();
         }
-
-        Thread.sleep(5000);
-
-        // ✅ Try to find chat input and type
-        try {
-            WebElement inputBox = wait.until(
-                ExpectedConditions.visibilityOfElementLocated(
-                    By.cssSelector("textarea")
-                )
-            );
-
-            inputBox.sendKeys("Hii, Give me a joke");
-            inputBox.sendKeys(Keys.ENTER);
-
-            System.out.println("Message sent");
-
-            Thread.sleep(5000);
-
-        } catch (Exception e) {
-            System.out.println("Could not interact with chat input (likely login required)");
-        }
-
-        // ✅ Take screenshot (always works)
-        File screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.FILE);
-        FileUtils.copyFile(screenshot, new File("output.png"));
-
-        driver.quit();
     }
 }
