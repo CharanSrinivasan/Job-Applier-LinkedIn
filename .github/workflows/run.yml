@@ -20,21 +20,19 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # ✅ Install Chromium properly
       - name: Install Chromium
         run: |
           sudo apt update
           sudo apt install -y chromium-browser chromium-chromedriver
 
-      # ✅ Verify installation (helps debugging)
-      - name: Verify Chrome
+      - name: Verify Chromium
         run: chromium-browser --version
 
       - name: Run Selenium Script
         run: mvn clean compile exec:java
 
       - name: Upload Screenshot
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4   # ✅ FIXED HERE
         with:
           name: selenium-output
           path: output.png
