@@ -22,7 +22,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         // ✅ Wait until 7:05 PM IST
-        waitUntil(19, 5);
+        waitUntil(19, 4);
 
         ChromeOptions options = new ChromeOptions();
 
