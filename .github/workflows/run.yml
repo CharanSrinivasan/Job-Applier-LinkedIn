@@ -1,0 +1,22 @@
+name: Run Selenium Script
+
+on:
+  schedule:
+    - cron: '30 3 * * *'  # 9 AM IST
+  workflow_dispatch:
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Chrome
+        run: |
+          sudo apt update
+          sudo apt install -y chromium-browser
+
+      - name: Run Script
+        run: mvn clean compile exec:java -Dexec.mainClass="Main"
