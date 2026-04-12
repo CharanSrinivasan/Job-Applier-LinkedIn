@@ -20,18 +20,18 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Install Chrome
+      # ✅ Install Chromium properly
+      - name: Install Chromium
         run: |
           sudo apt update
-          sudo apt install -y chromium-browser
+          sudo apt install -y chromium-browser chromium-chromedriver
 
-      - name: Install ChromeDriver
-        run: |
-          sudo apt install -y chromium-chromedriver
-          sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
+      # ✅ Verify installation (helps debugging)
+      - name: Verify Chrome
+        run: chromium-browser --version
 
       - name: Run Selenium Script
-        run: mvn clean compile exec:java -Dexec.mainClass="Main"
+        run: mvn clean compile exec:java
 
       - name: Upload Screenshot
         uses: actions/upload-artifact@v3
