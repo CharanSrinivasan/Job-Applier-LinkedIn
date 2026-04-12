@@ -33,3 +33,4 @@ jobs:
         with:
           name: selenium-output
           path: output.png
+          # trigger workflow
