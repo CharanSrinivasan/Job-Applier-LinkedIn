@@ -2,21 +2,44 @@ name: Run Selenium Script
 
 on:
   schedule:
-    - cron: '30 3 * * *'  # 9 AM IST
-  workflow_dispatch:
+    - cron: '30 3 * * *'   # Runs at 9:00 AM IST (3:30 AM UTC)
+  workflow_dispatch:        # Allows manual trigger
 
 jobs:
   run:
     runs-on: ubuntu-latest
 
     steps:
+      # 1. Checkout your repo
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # 2. Set up Java
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      # 3. Install Chrome
       - name: Install Chrome
         run: |
           sudo apt update
           sudo apt install -y chromium-browser
 
-      - name: Run Script
+      # 4. Install ChromeDriver (Selenium needs this)
+      - name: Install ChromeDriver
+        run: |
+          sudo apt install -y chromium-chromedriver
+          sudo ln -s /usr/lib/chromium-browser/chromedriver /usr/bin/chromedriver
+
+      # 5. Build and run your Java program
+      - name: Run Selenium Script
         run: mvn clean compile exec:java -Dexec.mainClass="Main"
+
+      # 6. Upload screenshot as artifact (so you can see result)
+      - name: Upload Screenshot
+        uses: actions/upload-artifact@v3
+        with:
+          name: selenium-output
+          path: output.png
