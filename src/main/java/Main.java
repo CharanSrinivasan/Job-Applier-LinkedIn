@@ -11,7 +11,7 @@ public class Main {
     public static void main(String[] args) throws Exception {
 
         // ✅ Placeholder API Key (replace later)
-        String apiKey = "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";
+        String apiKey = System.getenv("OPENAIKEY");
 
         // ✅ Request body
         String requestBody = """
