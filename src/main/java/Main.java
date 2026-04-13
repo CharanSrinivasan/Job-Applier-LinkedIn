@@ -63,9 +63,7 @@ public class Main {
             }
 
             WebElement inputBox = wait.until(
-                ExpectedConditions.presenceOfElementLocated(
-                    By.cssSelector("textarea[name='prompt-textarea']")
-                )
+                ExpectedConditions.elementToBeClickable(By.cssSelector("textarea[name='prompt-textarea']"))
             );
 
             inputBox.sendKeys("Hii, Give me a joke");
