@@ -62,46 +62,23 @@ public class Main {
                 System.out.println("No continue button found");
             }
 
-            // ✅ Try to find input box
-            WebElement inputBox = null;
+            WebElement inputBox = wait.until(
+                ExpectedConditions.presenceOfElementLocated(
+                    By.cssSelector("textarea[name='prompt-textarea']")
+                )
+            );
 
-            try {
-                inputBox = wait.until(
-                        ExpectedConditions.visibilityOfElementLocated(By.tagName("textarea"))
-                );
-                System.out.println("Input box found");
-            } catch (Exception e) {
-                System.out.println("Input box NOT found");
-            }
+            inputBox.sendKeys("Hii, Give me a joke");
+            
+            // Wait until button becomes enabled
+            WebElement sendBtn = wait.until(
+                ExpectedConditions.elementToBeClickable(
+                    By.id("composer-submit-button")
+                )
+            );
 
-            // ✅ If input exists → send message
-            if (inputBox != null) {
+            sendBtn.click();
 
-                inputBox.sendKeys("Hii, Give me a joke");
-                System.out.println("Typed message");
-
-                try {
-                    WebElement sendBtn = wait.until(
-                            ExpectedConditions.elementToBeClickable(
-                                    By.id("composer-submit-button")
-                            )
-                    );
-
-                    sendBtn.click();
-                    System.out.println("Clicked send button");
-
-                    // Wait for response attempt
-                    wait.until(ExpectedConditions.or(
-                            ExpectedConditions.presenceOfElementLocated(By.cssSelector("[data-message-author-role='assistant']")),
-                            ExpectedConditions.presenceOfElementLocated(By.tagName("article"))
-                    ));
-
-                } catch (Exception e) {
-                    System.out.println("Send button not clickable");
-                }
-            }
-
-            // ✅ Always capture page source (VERY IMPORTANT)
             String pageSource = driver.getPageSource();
             Files.writeString(new File("page.html").toPath(), pageSource);
 
